@@ -26,12 +26,12 @@ export class CreateClientService {
     }
   }
 
-  async create(usuarioData: { nome: string; email: string; telefone: string }): Promise<any> {
+  async create(usuarioData: { nome: string; email: string; telefone: string; coordenadas: string }): Promise<any> {
     const client = await this.pool.connect();
     try {
-      const { nome, email, telefone } = usuarioData;
-      const insertQuery = 'INSERT INTO usuarios (nome, email, telefone) VALUES ($1, $2, $3) RETURNING *';
-      const result = await client.query(insertQuery, [nome, email, telefone]);
+      const { nome, email, telefone, coordenadas } = usuarioData;
+      const insertQuery = 'INSERT INTO usuarios (nome, email, telefone, coordenadas) VALUES ($1, $2, $3, $4) RETURNING *';
+      const result = await client.query(insertQuery, [nome, email, telefone, coordenadas]);
       return result.rows[0];
     } finally {
       client.release();
