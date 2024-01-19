@@ -15,6 +15,17 @@ export class CreateClientService {
     }
   }
 
+  async nomeExists(nome: string): Promise<boolean> {
+    const client = await this.pool.connect();
+    try {
+      const nomeExistQuery = 'SELECT * FROM usuarios WHERE nome = $1';
+      const nomeExistResult = await client.query(nomeExistQuery, [nome]);
+      return nomeExistResult.rows.length > 0;
+    } finally {
+      client.release();
+    }
+  }
+
   async emailExists(email: string): Promise<boolean> {
     const client = await this.pool.connect();
     try {
@@ -28,8 +39,14 @@ export class CreateClientService {
 
   async create(usuarioData: { nome: string; email: string; telefone: string; coordenadas: string }): Promise<any> {
     const client = await this.pool.connect();
+
     try {
       const { nome, email, telefone, coordenadas } = usuarioData;
+
+      if (await this.nomeExists(nome)) {
+        throw new Error('Nome já cadastrado.');
+      }
+
       const insertQuery = 'INSERT INTO usuarios (nome, email, telefone, coordenadas) VALUES ($1, $2, $3, $4) RETURNING *';
       const result = await client.query(insertQuery, [nome, email, telefone, coordenadas]);
       return result.rows[0];
@@ -50,7 +67,14 @@ export class CreateClientService {
         throw new Error('Usuário não encontrado.');
       }
 
-      // verificar se o novo email já existe no banco de dados, exceto para o próprio usuário
+      if (nome) {
+        const nomeExistQuery = 'SELECT * FROM usuarios WHERE nome = $1 AND id != $2';
+        const nomeExistResult = await client.query(nomeExistQuery, [nome, id]);
+        if (nomeExistResult.rows.length > 0) {
+          throw new Error('Nome já cadastrado para outro usuário.');
+        }
+      }
+
       if (email) {
         const emailExistQuery = 'SELECT * FROM usuarios WHERE email = $1 AND id != $2';
         const emailExistResult = await client.query(emailExistQuery, [email, id]);

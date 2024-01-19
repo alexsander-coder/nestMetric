@@ -49,8 +49,8 @@ export class CalcRoutesService {
       const result = await client.query('SELECT * FROM usuarios');
       let usuarios: SeuTipoDeUsuario[] = result.rows;
 
-      let pontoAtual = usuarios.find(usuario => usuario.id === 7);
-      let pontosRestantes = usuarios.filter(usuario => usuario.id !== pontoAtual.id);
+      let pontoAtual = usuarios.find(usuario => usuario.nome === "empresa");
+      let pontosRestantes = usuarios.filter(usuario => usuario.nome !== pontoAtual.nome);
 
       let sequencia: SeuTipoDeUsuario[] = [];
 
